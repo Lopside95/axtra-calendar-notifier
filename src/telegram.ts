@@ -63,7 +63,7 @@ class TelegramService {
       }
 
       storage.addWorkingDay(date);
-      this.sendMessage(`✅ Added ${date} as a working day`);
+      this.sendMessage(`✅ Added ${this.formatDateNice(date)} as a working day`);
     });
 
     // Remove working day
@@ -76,7 +76,7 @@ class TelegramService {
 
       const date = match[1].trim();
       storage.removeWorkingDay(date);
-      this.sendMessage(`✅ Removed ${date} from working days`);
+      this.sendMessage(`✅ Removed ${this.formatDateNice(date)} from working days`);
     });
 
     // List working days
@@ -178,6 +178,14 @@ class TelegramService {
 
     const date = new Date(dateString + 'T00:00:00');
     return !isNaN(date.getTime());
+  }
+
+  private formatDateNice(dateString: string): string {
+    // Convert YYYY-MM-DD to "Friday 23-01-2026"
+    const date = new Date(dateString + 'T00:00:00');
+    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const [year, month, day] = dateString.split('-');
+    return `${dayOfWeek} ${day}-${month}-${year}`;
   }
 
   async sendMessage(text: string): Promise<void> {
