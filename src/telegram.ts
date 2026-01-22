@@ -49,16 +49,16 @@ class TelegramService {
     });
 
     // Add working day
-    this.bot.onText(/\/add_workday (.+)/, (msg, match) => {
+    this.bot.onText(/\/add (.+)/, (msg, match) => {
       if (msg.chat.id.toString() !== this.chatId) return;
       if (!match || !match[1]) {
-        this.sendMessage('❌ Please provide a date in YYYY-MM-DD format\nExample: /add_workday 2026-01-25');
+        this.sendMessage('❌ Please provide a date in YYYY-MM-DD format\nExample: /add 2026-01-25');
         return;
       }
 
       const date = match[1].trim();
       if (!this.isValidDate(date)) {
-        this.sendMessage('❌ Invalid date format. Please use YYYY-MM-DD\nExample: /add_workday 2026-01-25');
+        this.sendMessage('❌ Invalid date format. Please use YYYY-MM-DD\nExample: /add 2026-01-25');
         return;
       }
 
@@ -67,10 +67,10 @@ class TelegramService {
     });
 
     // Remove working day
-    this.bot.onText(/\/remove_workday (.+)/, (msg, match) => {
+    this.bot.onText(/\/remove (.+)/, (msg, match) => {
       if (msg.chat.id.toString() !== this.chatId) return;
       if (!match || !match[1]) {
-        this.sendMessage('❌ Please provide a date in YYYY-MM-DD format\nExample: /remove_workday 2026-01-25');
+        this.sendMessage('❌ Please provide a date in YYYY-MM-DD format\nExample: /remove 2026-01-25');
         return;
       }
 
@@ -80,7 +80,7 @@ class TelegramService {
     });
 
     // List working days
-    this.bot.onText(/\/list_workdays/, (msg) => {
+    this.bot.onText(/\/list/, (msg) => {
       if (msg.chat.id.toString() !== this.chatId) return;
 
       const upcomingDays = storage.getUpcomingWorkingDays();
@@ -135,7 +135,7 @@ class TelegramService {
     });
 
     // Clear working days
-    this.bot.onText(/\/clear_workdays/, (msg) => {
+    this.bot.onText(/\/clear/, (msg) => {
       if (msg.chat.id.toString() !== this.chatId) return;
       storage.clearWorkingDays();
       this.sendMessage('✅ Cleared all manually added working days\n\n' +
@@ -159,10 +159,10 @@ class TelegramService {
     message += 'I monitor your Axtra calendar and notify you when new events are added on your working days.\n\n';
     message += '*Available Commands:*\n\n';
     message += '/status - Check if the bot is running\n';
-    message += '/add_workday YYYY-MM-DD - Add a working day\n';
-    message += '/remove_workday YYYY-MM-DD - Remove a working day\n';
-    message += '/list_workdays - Show upcoming working days\n';
-    message += '/clear_workdays - Clear all manually added working days\n';
+    message += '/add YYYY-MM-DD - Add a working day\n';
+    message += '/remove YYYY-MM-DD - Remove a working day\n';
+    message += '/list - Show upcoming working days\n';
+    message += '/clear - Clear all manually added working days\n';
     message += '/help - Show this help message\n';
 
     if (config.autoDetectWorkingDays) {
