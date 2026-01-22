@@ -88,5 +88,5 @@ export const config: Config = {
 
   // Working Days
   autoDetectWorkingDays:
-    getEnvVar("AUTO_DETECT_WORKING_DAYS", "false") === "false",
+    getEnvVar("AUTO_DETECT_WORKING_DAYS", "true") === "true",
 };
