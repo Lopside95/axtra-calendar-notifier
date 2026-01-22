@@ -139,7 +139,7 @@ class CalendarService {
     return {
       id: event.id,
       summary: event.summary,
-      description: event.description,
+      description: event.description ?? undefined,
       start,
       end,
       date,
