@@ -22,6 +22,11 @@ export interface Config {
 
   // Working Days Configuration
   autoDetectWorkingDays: boolean;
+
+  // Retry Configuration
+  retryMaxAttempts: number;
+  retryInitialDelayMs: number;
+  retryMaxDelayMs: number;
 }
 
 function getEnvVar(key: string, defaultValue?: string): string {
@@ -90,4 +95,9 @@ export const config: Config = {
   // Working Days
   autoDetectWorkingDays:
     getEnvVar("AUTO_DETECT_WORKING_DAYS", "true") === "true",
+
+  // Retry Configuration
+  retryMaxAttempts: parseInt(getEnvVar("RETRY_MAX_ATTEMPTS", "3"), 10),
+  retryInitialDelayMs: parseInt(getEnvVar("RETRY_INITIAL_DELAY_MS", "1000"), 10),
+  retryMaxDelayMs: parseInt(getEnvVar("RETRY_MAX_DELAY_MS", "10000"), 10),
 };

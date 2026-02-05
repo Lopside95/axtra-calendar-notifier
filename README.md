@@ -10,22 +10,26 @@ Working part-time with a variable schedule, I needed notifications when my work 
 
 Built an automated notification system that:
 
-- Monitors Google Calendar via API
+- Monitors Google Calendar via API with exponential backoff retry logic
 - Auto-detects working days from existing calendar events
 - Sends Telegram notifications only for relevant changes
-- Deployed continuously on Railway
+- Structured logging with automatic file rotation for debugging
+- Deployed continuously on Railway with health monitoring
 
 ## Tech
 
 - **TypeScript/Node.js** - Type-safe backend
-- **Google Calendar API** - OAuth 2.0 integration
+- **Google Calendar API** - OAuth 2.0 integration with automatic retry logic
 - **Telegram Bot API** - Real-time notifications
+- **Winston** - Structured logging with file rotation
 - **Railway** - Cloud deployment with health checks
 - **Express** - Health monitoring endpoint
 
 ## What I Learned
 
 - Implementing OAuth 2.0 flows for Google APIs
+- Building production-ready retry logic with exponential backoff
+- Structured logging patterns for cloud applications
 - Building stateful Telegram bots with command handlers
 - Managing secrets and credentials in cloud deployments
 - Designing flexible scheduling systems

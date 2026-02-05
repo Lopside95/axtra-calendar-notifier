@@ -4,8 +4,7 @@ A Node.js application that monitors your Google Calendar for Axtra work events a
 
 ## Features
 
-- **Automatic Calendar Monitoring**: Checks your Google Calendar every 30 minutes (configurable)
-- **Smart Working Day Detection**: Automatically detects working days from existing calendar events
+- **Automatic Calendar Monitoring**: Checks your Google Calendar every 10 minutes (configurable)
 - **Manual Working Day Management**: Add/remove working days via Telegram bot commands
 - **Duplicate Prevention**: Tracks notified events to avoid sending duplicate notifications
 - **Telegram Bot Commands**: Manage working days and check status directly from Telegram
@@ -82,6 +81,7 @@ npm install
 ### 4. Configure Environment Variables
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
@@ -104,6 +104,7 @@ npm run auth
 ```
 
 This will:
+
 1. Display a URL in your terminal
 2. Open the URL in your browser
 3. Sign in with your Google account
@@ -121,11 +122,13 @@ npm start
 ```
 
 Or for development with auto-reload:
+
 ```bash
 npm run dev
 ```
 
 You should see:
+
 - Google Calendar API initialized
 - Telegram bot started
 - A message in Telegram confirming the bot is running
@@ -135,21 +138,25 @@ You should see:
 #### Option A: Using Railway CLI
 
 1. Install Railway CLI:
+
    ```bash
    npm i -g @railway/cli
    ```
 
 2. Login to Railway:
+
    ```bash
    railway login
    ```
 
 3. Create a new project:
+
    ```bash
    railway init
    ```
 
 4. Set environment variables in Railway:
+
    ```bash
    railway variables set TELEGRAM_BOT_TOKEN="your_token"
    railway variables set TELEGRAM_CHAT_ID="your_chat_id"
@@ -159,6 +166,7 @@ You should see:
    ```
 
 5. Add credentials.json and token.json as environment variables:
+
    ```bash
    # Convert credentials.json to base64
    base64 credentials.json | pbcopy  # On macOS
@@ -204,22 +212,30 @@ To use the base64-encoded credentials, update `src/config.ts`:
 // Add helper function at the top
 function getCredentialsPath(): string {
   if (process.env.GOOGLE_CREDENTIALS) {
-    const decoded = Buffer.from(process.env.GOOGLE_CREDENTIALS, 'base64').toString('utf-8');
-    const tempPath = path.join('/tmp', 'credentials.json');
+    const decoded = Buffer.from(
+      process.env.GOOGLE_CREDENTIALS,
+      "base64",
+    ).toString("utf-8");
+    const tempPath = path.join("/tmp", "credentials.json");
     fs.writeFileSync(tempPath, decoded);
     return tempPath;
   }
-  return getEnvVar('CREDENTIALS_PATH', path.join(__dirname, '..', 'credentials.json'));
+  return getEnvVar(
+    "CREDENTIALS_PATH",
+    path.join(__dirname, "..", "credentials.json"),
+  );
 }
 
 function getTokenPath(): string {
   if (process.env.GOOGLE_TOKEN) {
-    const decoded = Buffer.from(process.env.GOOGLE_TOKEN, 'base64').toString('utf-8');
-    const tempPath = path.join('/tmp', 'token.json');
+    const decoded = Buffer.from(process.env.GOOGLE_TOKEN, "base64").toString(
+      "utf-8",
+    );
+    const tempPath = path.join("/tmp", "token.json");
     fs.writeFileSync(tempPath, decoded);
     return tempPath;
   }
-  return getEnvVar('TOKEN_PATH', path.join(__dirname, '..', 'token.json'));
+  return getEnvVar("TOKEN_PATH", path.join(__dirname, "..", "token.json"));
 }
 
 // Then in the config object:
@@ -238,6 +254,7 @@ export const config: Config = {
 Set `AUTO_DETECT_WORKING_DAYS=true` in your `.env` file.
 
 The app will:
+
 - Scan your Axtra calendar for existing events
 - Automatically detect which days have Axtra events
 - Consider those days as working days
@@ -250,6 +267,7 @@ This is perfect for varying schedules!
 Set `AUTO_DETECT_WORKING_DAYS=false` in your `.env` file.
 
 Use Telegram commands to manage working days:
+
 - `/add_workday 2026-01-25` - Add a specific date
 - `/remove_workday 2026-01-25` - Remove a date
 - `/list_workdays` - See all upcoming working days
@@ -301,6 +319,7 @@ Send these commands to your Telegram bot:
 The app exposes a health check endpoint at `http://localhost:3000/health` (or your Railway URL).
 
 Response:
+
 ```json
 {
   "status": "healthy",
@@ -314,6 +333,7 @@ Response:
 ### Logs
 
 View logs in Railway dashboard or locally with:
+
 ```bash
 railway logs
 ```
@@ -331,6 +351,7 @@ railway logs
 ### Telegram bot not responding
 
 **Solution**:
+
 - Verify `TELEGRAM_BOT_TOKEN` is correct
 - Verify `TELEGRAM_CHAT_ID` is correct (it's a number, not a username)
 - Check that you've sent at least one message to the bot
@@ -338,6 +359,7 @@ railway logs
 ### Not receiving notifications
 
 **Solution**:
+
 - Check that events are on working days: `/list_workdays`
 - Verify auto-detect is working: check logs for "Auto-detected X working days"
 - Check if events were already notified before the app started
@@ -345,6 +367,7 @@ railway logs
 ### Railway deployment fails
 
 **Solution**:
+
 - Ensure all environment variables are set
 - Check Railway logs for specific errors
 - Verify `GOOGLE_CREDENTIALS` and `GOOGLE_TOKEN` are valid base64 strings
@@ -371,21 +394,22 @@ npm run watch
 
 ## Configuration Reference
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `TELEGRAM_BOT_TOKEN` | Yes | - | Your Telegram bot token |
-| `TELEGRAM_CHAT_ID` | Yes | - | Your Telegram chat ID |
-| `CALENDAR_NAME` | No | Axtrazh - Urban Axe Throwing | Name of the calendar to monitor |
-| `CHECK_INTERVAL_MINUTES` | No | 30 | How often to check the calendar (in minutes) |
-| `AUTO_DETECT_WORKING_DAYS` | No | true | Auto-detect working days from calendar events |
-| `PORT` | No | 3000 | Port for health check server |
-| `CREDENTIALS_PATH` | No | ./credentials.json | Path to Google OAuth credentials |
-| `TOKEN_PATH` | No | ./token.json | Path to Google OAuth token |
-| `DATA_PATH` | No | ./data | Directory for data files |
+| Variable                   | Required | Default                      | Description                                   |
+| -------------------------- | -------- | ---------------------------- | --------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN`       | Yes      | -                            | Your Telegram bot token                       |
+| `TELEGRAM_CHAT_ID`         | Yes      | -                            | Your Telegram chat ID                         |
+| `CALENDAR_NAME`            | No       | Axtrazh - Urban Axe Throwing | Name of the calendar to monitor               |
+| `CHECK_INTERVAL_MINUTES`   | No       | 30                           | How often to check the calendar (in minutes)  |
+| `AUTO_DETECT_WORKING_DAYS` | No       | true                         | Auto-detect working days from calendar events |
+| `PORT`                     | No       | 3000                         | Port for health check server                  |
+| `CREDENTIALS_PATH`         | No       | ./credentials.json           | Path to Google OAuth credentials              |
+| `TOKEN_PATH`               | No       | ./token.json                 | Path to Google OAuth token                    |
+| `DATA_PATH`                | No       | ./data                       | Directory for data files                      |
 
 ## Support
 
 For issues or questions, please check:
+
 - The troubleshooting section above
 - Railway logs for deployment issues
 - Google Calendar API documentation

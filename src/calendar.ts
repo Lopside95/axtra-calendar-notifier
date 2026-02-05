@@ -3,6 +3,7 @@ import fs from 'fs';
 import { OAuth2Client } from 'google-auth-library';
 import { config } from './config';
 import logger from './logger';
+import { retryWithBackoff } from './retry';
 
 export interface CalendarEvent {
   id: string;
@@ -81,7 +82,14 @@ class CalendarService {
     }
 
     try {
-      const res = await this.calendar.calendarList.list();
+      const res = await retryWithBackoff(
+        async () => await this.calendar!.calendarList.list(),
+        {
+          maxRetries: config.retryMaxAttempts,
+          initialDelayMs: config.retryInitialDelayMs,
+          maxDelayMs: config.retryMaxDelayMs,
+        }
+      );
       const calendars = res.data.items || [];
 
       const targetCalendar = calendars.find(cal => cal.summary === config.calendarName);
@@ -111,13 +119,20 @@ class CalendarService {
       const now = new Date();
       const timeMin = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
 
-      const res = await this.calendar.events.list({
-        calendarId,
-        timeMin: timeMin.toISOString(),
-        maxResults: 100,
-        singleEvents: true,
-        orderBy: 'startTime',
-      });
+      const res = await retryWithBackoff(
+        async () => await this.calendar!.events.list({
+          calendarId,
+          timeMin: timeMin.toISOString(),
+          maxResults: 100,
+          singleEvents: true,
+          orderBy: 'startTime',
+        }),
+        {
+          maxRetries: config.retryMaxAttempts,
+          initialDelayMs: config.retryInitialDelayMs,
+          maxDelayMs: config.retryMaxDelayMs,
+        }
+      );
 
       const events = res.data.items || [];
       return events.map(event => this.parseEvent(event)).filter(e => e !== null) as CalendarEvent[];
@@ -141,14 +156,21 @@ class CalendarService {
       const now = new Date();
       const timeMax = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
 
-      const res = await this.calendar.events.list({
-        calendarId,
-        timeMin: now.toISOString(),
-        timeMax: timeMax.toISOString(),
-        maxResults: 100,
-        singleEvents: true,
-        orderBy: 'startTime',
-      });
+      const res = await retryWithBackoff(
+        async () => await this.calendar!.events.list({
+          calendarId,
+          timeMin: now.toISOString(),
+          timeMax: timeMax.toISOString(),
+          maxResults: 100,
+          singleEvents: true,
+          orderBy: 'startTime',
+        }),
+        {
+          maxRetries: config.retryMaxAttempts,
+          initialDelayMs: config.retryInitialDelayMs,
+          maxDelayMs: config.retryMaxDelayMs,
+        }
+      );
 
       const events = res.data.items || [];
       return events.map(event => this.parseEvent(event)).filter(e => e !== null) as CalendarEvent[];
