@@ -188,12 +188,29 @@ class TelegramService {
     return `${dayOfWeek} ${day}-${month}-${year}`;
   }
 
+  // Escape special characters for Telegram Markdown
+  private escapeMarkdown(text: string): string {
+    // Escape special Markdown characters: _ * [ ] ( ) ~ ` > # + - = | { } . !
+    return text.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, '\\$1');
+  }
+
   async sendMessage(text: string): Promise<void> {
     try {
       await this.bot.sendMessage(this.chatId, text, { parse_mode: 'Markdown' });
       console.log('Telegram message sent successfully');
     } catch (error) {
       console.error('Error sending Telegram message:', error);
+      throw error;
+    }
+  }
+
+  // Send error message without Markdown parsing to avoid special character issues
+  async sendErrorMessage(text: string): Promise<void> {
+    try {
+      await this.bot.sendMessage(this.chatId, text);
+      console.log('Telegram error message sent successfully');
+    } catch (error) {
+      console.error('Error sending Telegram error message:', error);
       throw error;
     }
   }

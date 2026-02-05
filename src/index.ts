@@ -93,10 +93,10 @@ class CalendarNotifier {
     } catch (error) {
       console.error('❌ Error checking calendar:', error);
 
-      // Send error notification
+      // Send error notification (using plain text to avoid Markdown parsing issues)
       try {
-        await telegramService.sendMessage(
-          `⚠️ *Error checking calendar*\n\n${error instanceof Error ? error.message : 'Unknown error'}`
+        await telegramService.sendErrorMessage(
+          `⚠️ Error checking calendar\n\n${error instanceof Error ? error.message : 'Unknown error'}`
         );
       } catch (notifyError) {
         console.error('❌ Error sending error notification:', notifyError);

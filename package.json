@@ -16,7 +16,7 @@
     "telegram",
     "notifications"
   ],
-  "author": "",
+  "author": "James Wallington",
   "license": "ISC",
   "dependencies": {
     "googleapis": "^129.0.0",

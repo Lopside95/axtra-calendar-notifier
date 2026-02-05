@@ -37,6 +37,24 @@ class CalendarService {
     if (fs.existsSync(config.tokenPath)) {
       const token = JSON.parse(fs.readFileSync(config.tokenPath, 'utf-8'));
       oAuth2Client.setCredentials(token);
+
+      // Listen for token refresh events and save the new token
+      oAuth2Client.on('tokens', (tokens) => {
+        console.log('🔄 OAuth token refreshed, saving to disk...');
+
+        // If we only get an access_token, preserve the refresh_token from the existing token
+        if (tokens.refresh_token) {
+          fs.writeFileSync(config.tokenPath, JSON.stringify(tokens, null, 2));
+        } else {
+          // Merge with existing token to preserve refresh_token
+          const existingToken = JSON.parse(fs.readFileSync(config.tokenPath, 'utf-8'));
+          const updatedToken = { ...existingToken, ...tokens };
+          fs.writeFileSync(config.tokenPath, JSON.stringify(updatedToken, null, 2));
+        }
+
+        console.log('✅ Token saved successfully');
+      });
+
       return oAuth2Client;
     } else {
       throw new Error(
