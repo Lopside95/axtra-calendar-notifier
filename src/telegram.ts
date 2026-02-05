@@ -1,6 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { config } from './config';
 import { storage } from './storage';
+import logger from './logger';
 
 class TelegramService {
   private bot: TelegramBot;
@@ -16,7 +17,7 @@ class TelegramService {
     this.bot.stopPolling();
     this.bot = new TelegramBot(config.telegramBotToken, { polling: true });
     this.setupCommands();
-    console.log('Telegram bot polling enabled');
+    logger.info('Telegram bot polling enabled');
   }
 
   private setupCommands(): void {
@@ -197,9 +198,9 @@ class TelegramService {
   async sendMessage(text: string): Promise<void> {
     try {
       await this.bot.sendMessage(this.chatId, text, { parse_mode: 'Markdown' });
-      console.log('Telegram message sent successfully');
+      logger.info('Telegram message sent successfully', { chatId: this.chatId });
     } catch (error) {
-      console.error('Error sending Telegram message:', error);
+      logger.error('Error sending Telegram message', { error, chatId: this.chatId });
       throw error;
     }
   }
@@ -208,9 +209,9 @@ class TelegramService {
   async sendErrorMessage(text: string): Promise<void> {
     try {
       await this.bot.sendMessage(this.chatId, text);
-      console.log('Telegram error message sent successfully');
+      logger.info('Telegram error message sent successfully', { chatId: this.chatId });
     } catch (error) {
-      console.error('Error sending Telegram error message:', error);
+      logger.error('Error sending Telegram error message', { error, chatId: this.chatId });
       throw error;
     }
   }

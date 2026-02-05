@@ -3,21 +3,22 @@ import { config } from './config';
 import { calendarService } from './calendar';
 import { telegramService } from './telegram';
 import { storage } from './storage';
+import logger from './logger';
 
 class CalendarNotifier {
   private lastCheckTime: Date | null = null;
   private isRunning: boolean = false;
 
   async start(): Promise<void> {
-    console.log('🚀 Starting Axtra Calendar Notifier...\n');
+    logger.info('Starting Axtra Calendar Notifier');
 
     try {
       // Initialize Google Calendar API
-      console.log('📅 Initializing Google Calendar API...');
+      logger.info('Initializing Google Calendar API');
       await calendarService.initialize();
 
       // Enable Telegram bot polling for commands
-      console.log('🤖 Starting Telegram bot...');
+      logger.info('Starting Telegram bot');
       telegramService.enablePolling();
 
       // Send startup notification
@@ -37,12 +38,13 @@ class CalendarNotifier {
       // Schedule periodic checks
       this.scheduleChecks();
 
-      console.log('\n✅ Application started successfully!');
-      console.log(`⏰ Next check in ${config.checkIntervalMinutes} minutes\n`);
+      logger.info('Application started successfully', {
+        checkIntervalMinutes: config.checkIntervalMinutes
+      });
 
       this.isRunning = true;
     } catch (error) {
-      console.error('❌ Error starting application:', error);
+      logger.error('Error starting application', { error });
       process.exit(1);
     }
   }
@@ -55,7 +57,7 @@ class CalendarNotifier {
 
   private async checkCalendar(): Promise<void> {
     const now = new Date();
-    console.log(`\n🔍 Checking calendar at ${now.toLocaleString()}...`);
+    logger.info('Calendar check started', { timestamp: now.toISOString() });
 
     try {
       // If auto-detect is enabled, update working days from upcoming events
@@ -65,7 +67,10 @@ class CalendarNotifier {
 
       // Get recent events (last 24 hours to catch newly added events)
       const recentEvents = await calendarService.getRecentEvents(24);
-      console.log(`📊 Found ${recentEvents.length} events in the last 24 hours`);
+      logger.info('Found recent events', {
+        eventCount: recentEvents.length,
+        hoursBack: 24
+      });
 
       // Filter for events on working days that haven't been notified yet
       const newWorkingDayEvents = recentEvents.filter(event => {
@@ -79,7 +84,9 @@ class CalendarNotifier {
         return isWorkingDay && notAlreadyNotified && isUpcoming;
       });
 
-      console.log(`📬 Found ${newWorkingDayEvents.length} new events on working days to notify`);
+      logger.info('Found new events on working days', {
+        newEventCount: newWorkingDayEvents.length
+      });
 
       // Send notifications for new events
       for (const event of newWorkingDayEvents) {
@@ -91,7 +98,7 @@ class CalendarNotifier {
 
       this.lastCheckTime = now;
     } catch (error) {
-      console.error('❌ Error checking calendar:', error);
+      logger.error('Error checking calendar', { error });
 
       // Send error notification (using plain text to avoid Markdown parsing issues)
       try {
@@ -99,7 +106,7 @@ class CalendarNotifier {
           `⚠️ Error checking calendar\n\n${error instanceof Error ? error.message : 'Unknown error'}`
         );
       } catch (notifyError) {
-        console.error('❌ Error sending error notification:', notifyError);
+        logger.error('Error sending error notification', { error: notifyError });
       }
     }
   }
@@ -115,9 +122,12 @@ class CalendarNotifier {
       // Update auto-detected working days
       storage.setAutoDetectedWorkingDays(eventDates);
 
-      console.log(`🔄 Auto-detected ${eventDates.length} working days from upcoming events`);
+      logger.info('Auto-detected working days from upcoming events', {
+        workingDaysCount: eventDates.length,
+        daysAhead: 30
+      });
     } catch (error) {
-      console.error('❌ Error auto-detecting working days:', error);
+      logger.error('Error auto-detecting working days', { error });
     }
   }
 
@@ -126,9 +136,16 @@ class CalendarNotifier {
       const message = calendarService.formatEventForNotification(event);
       await telegramService.sendNotification(message);
       storage.markEventNotified(event.id);
-      console.log(`✅ Notified about event: ${event.summary} on ${event.date}`);
+      logger.info('Notified about event', {
+        eventId: event.id,
+        eventSummary: event.summary,
+        eventDate: event.date
+      });
     } catch (error) {
-      console.error(`❌ Error notifying about event ${event.id}:`, error);
+      logger.error('Error notifying about event', {
+        error,
+        eventId: event.id
+      });
     }
   }
 
@@ -150,7 +167,7 @@ class CalendarNotifier {
     });
 
     app.listen(config.port, () => {
-      console.log(`🏥 Health check server running on port ${config.port}`);
+      logger.info('Health check server running', { port: config.port });
     });
   }
 }
@@ -161,11 +178,11 @@ notifier.start();
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('\n👋 Received SIGTERM, shutting down gracefully...');
+  logger.info('Received SIGTERM, shutting down gracefully');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('\n👋 Received SIGINT, shutting down gracefully...');
+  logger.info('Received SIGINT, shutting down gracefully');
   process.exit(0);
 });

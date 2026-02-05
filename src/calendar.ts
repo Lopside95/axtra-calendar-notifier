@@ -2,6 +2,7 @@ import { google, calendar_v3 } from 'googleapis';
 import fs from 'fs';
 import { OAuth2Client } from 'google-auth-library';
 import { config } from './config';
+import logger from './logger';
 
 export interface CalendarEvent {
   id: string;
@@ -20,11 +21,22 @@ class CalendarService {
     try {
       this.auth = await this.authorize();
       this.calendar = google.calendar({ version: 'v3', auth: this.auth });
-      console.log('Google Calendar API initialized successfully');
+      logger.info('Google Calendar API initialized successfully');
     } catch (error) {
-      console.error('Error initializing Google Calendar API:', error);
+      logger.error('Error initializing Google Calendar API', { error });
       throw error;
     }
+  }
+
+  // Helper method to check if error is an OAuth invalid_grant error
+  private isInvalidGrantError(error: any): boolean {
+    const errorString = JSON.stringify(error).toLowerCase();
+    return (
+      errorString.includes('invalid_grant') ||
+      error?.response?.data?.error === 'invalid_grant' ||
+      error?.message?.includes('invalid_grant') ||
+      error?.code === 401
+    );
   }
 
   private async authorize(): Promise<OAuth2Client> {
@@ -40,7 +52,7 @@ class CalendarService {
 
       // Listen for token refresh events and save the new token
       oAuth2Client.on('tokens', (tokens) => {
-        console.log('🔄 OAuth token refreshed, saving to disk...');
+        logger.info('OAuth token refreshed, saving to disk', { tokenPath: config.tokenPath });
 
         // If we only get an access_token, preserve the refresh_token from the existing token
         if (tokens.refresh_token) {
@@ -52,7 +64,7 @@ class CalendarService {
           fs.writeFileSync(config.tokenPath, JSON.stringify(updatedToken, null, 2));
         }
 
-        console.log('✅ Token saved successfully');
+        logger.info('Token saved successfully', { tokenPath: config.tokenPath });
       });
 
       return oAuth2Client;
@@ -79,8 +91,12 @@ class CalendarService {
       }
 
       return targetCalendar.id;
-    } catch (error) {
-      console.error('Error fetching calendar list:', error);
+    } catch (error: any) {
+      // Check if this is an OAuth error
+      if (this.isInvalidGrantError(error)) {
+        throw new Error('invalid_grant: Your OAuth token has expired or been revoked. Please re-authenticate by running: npm run auth');
+      }
+      logger.error('Error fetching calendar list', { error, calendarName: config.calendarName });
       throw error;
     }
   }
@@ -105,8 +121,12 @@ class CalendarService {
 
       const events = res.data.items || [];
       return events.map(event => this.parseEvent(event)).filter(e => e !== null) as CalendarEvent[];
-    } catch (error) {
-      console.error('Error fetching calendar events:', error);
+    } catch (error: any) {
+      // Check if this is an OAuth error
+      if (this.isInvalidGrantError(error)) {
+        throw new Error('invalid_grant: Your OAuth token has expired or been revoked. Please re-authenticate by running: npm run auth');
+      }
+      logger.error('Error fetching calendar events', { error, hoursBack });
       throw error;
     }
   }
@@ -132,8 +152,12 @@ class CalendarService {
 
       const events = res.data.items || [];
       return events.map(event => this.parseEvent(event)).filter(e => e !== null) as CalendarEvent[];
-    } catch (error) {
-      console.error('Error fetching upcoming calendar events:', error);
+    } catch (error: any) {
+      // Check if this is an OAuth error
+      if (this.isInvalidGrantError(error)) {
+        throw new Error('invalid_grant: Your OAuth token has expired or been revoked. Please re-authenticate by running: npm run auth');
+      }
+      logger.error('Error fetching upcoming calendar events', { error, daysAhead });
       throw error;
     }
   }

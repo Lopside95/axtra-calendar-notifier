@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { config } from './config';
+import logger from './logger';
 
 export interface StorageData {
   workingDays: string[]; // Array of dates in YYYY-MM-DD format
@@ -47,7 +48,11 @@ class Storage {
         defaultData.notifiedEvents = JSON.parse(notifiedEventsContent);
       }
     } catch (error) {
-      console.error('Error loading storage data:', error);
+      logger.error('Error loading storage data', {
+        error,
+        workingDaysPath: this.workingDaysPath,
+        notifiedEventsPath: this.notifiedEventsPath
+      });
     }
 
     return defaultData;

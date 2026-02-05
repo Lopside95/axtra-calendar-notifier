@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import fs from 'fs';
 import readline from 'readline';
 import { config } from './config';
+import logger from './logger';
 
 // The OAuth2 scopes we need
 const SCOPES = ['https://www.googleapis.com/auth/calendar.readonly'];
@@ -19,9 +20,9 @@ async function authenticate() {
       scope: SCOPES,
     });
 
-    console.log('\n🔐 Google Calendar Authentication\n');
-    console.log('Authorize this app by visiting this url:');
-    console.log('\n' + authUrl + '\n');
+    logger.info('Google Calendar Authentication');
+    logger.info('Authorize this app by visiting this url:');
+    logger.info(authUrl);
 
     const rl = readline.createInterface({
       input: process.stdin,
@@ -36,17 +37,17 @@ async function authenticate() {
 
         // Store the token to disk for later program executions
         fs.writeFileSync(config.tokenPath, JSON.stringify(tokens));
-        console.log('\n✅ Token stored to', config.tokenPath);
-        console.log('\nYou can now run the application with: npm start\n');
+        logger.info('Token stored successfully', { tokenPath: config.tokenPath });
+        logger.info('You can now run the application with: npm start');
       } catch (err) {
-        console.error('\n❌ Error retrieving access token:', err);
+        logger.error('Error retrieving access token', { error: err });
         process.exit(1);
       }
     });
   } catch (error) {
-    console.error('\n❌ Error reading credentials file:', error);
-    console.error('\nMake sure you have placed credentials.json in the project root.');
-    console.error('See README.md for instructions on how to obtain credentials.json\n');
+    logger.error('Error reading credentials file', { error, credentialsPath: config.credentialsPath });
+    logger.error('Make sure you have placed credentials.json in the project root');
+    logger.error('See README.md for instructions on how to obtain credentials.json');
     process.exit(1);
   }
 }

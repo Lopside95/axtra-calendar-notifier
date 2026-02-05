@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import logger from "./logger";
 
 dotenv.config();
 
@@ -41,10 +42,10 @@ function getCredentialsPath(): string {
       ).toString("utf-8");
       const tempPath = path.join("/tmp", "credentials.json");
       fs.writeFileSync(tempPath, decoded);
-      console.log("Using base64-encoded Google credentials from environment");
+      logger.info("Using base64-encoded Google credentials from environment", { tempPath });
       return tempPath;
     } catch (error) {
-      console.error("Error decoding GOOGLE_CREDENTIALS:", error);
+      logger.error("Error decoding GOOGLE_CREDENTIALS", { error });
     }
   }
   return getEnvVar(
@@ -62,10 +63,10 @@ function getTokenPath(): string {
       );
       const tempPath = path.join("/tmp", "token.json");
       fs.writeFileSync(tempPath, decoded);
-      console.log("Using base64-encoded Google token from environment");
+      logger.info("Using base64-encoded Google token from environment", { tempPath });
       return tempPath;
     } catch (error) {
-      console.error("Error decoding GOOGLE_TOKEN:", error);
+      logger.error("Error decoding GOOGLE_TOKEN", { error });
     }
   }
   return getEnvVar("TOKEN_PATH", path.join(__dirname, "..", "token.json"));
