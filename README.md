@@ -4,7 +4,7 @@ A TypeScript application that integrates Google Calendar API with Telegram to se
 
 ## The Problem
 
-Working part-time with a variable schedule, I needed notifications when my work calendar changed - but only on days I was actually working, not every time something was added.
+Working part-time with a variable schedule, I needed notifications when my work calendar changed - but only on days I was actually working, not every time something was added. This was the issue with directly using Google Calendar for notifications. 
 
 ## The Solution
 
